@@ -4,6 +4,8 @@ provider "azurerm" {
 }
 
 provider "hopsworksai" {
+  api_key     = "lYC0V9BTp48YfDlrJtqvB6q53S8cS1QB1BHuXBoq"
+  api_gateway = "https://qaicacl203.execute-api.us-east-2.amazonaws.com/gautier"
 }
 
 data "azurerm_resource_group" "rg" {
@@ -132,8 +134,11 @@ data "hopsworksai_instance_type" "smallest_worker" {
 }
 
 resource "hopsworksai_cluster" "cluster" {
-  name    = "hopsworks-cluster"
-  ssh_key = module.azure.ssh_key_pair_name
+  name                    = "hopsworks-cluster"
+  ssh_key                 = module.azure.ssh_key_pair_name
+  version                 = "3.1.0-SNAPSHOT"
+  count                   = 0
+  backup_retention_period = 30
 
   head {
     instance_type = data.hopsworksai_instance_type.head.id
@@ -161,14 +166,8 @@ resource "hopsworksai_cluster" "cluster" {
   }
 
   rondb {
-    management_nodes {
-      instance_type = data.hopsworksai_instance_type.rondb_mgm.id
-    }
-    data_nodes {
+    single_node {
       instance_type = data.hopsworksai_instance_type.rondb_data.id
-    }
-    mysql_nodes {
-      instance_type = data.hopsworksai_instance_type.rondb_mysql.id
     }
   }
 
@@ -179,4 +178,13 @@ resource "hopsworksai_cluster" "cluster" {
   tags = {
     Purpose = "testing"
   }
+}
+resource "hopsworksai_backup" "backup" {
+  cluster_id  = "16677730-3980-11ed-bc53-8b27f48d4c3b"
+  backup_name = "my-test-backup"
+  count       = 1
+}
+resource "hopsworksai_cluster_from_backup" "cluster" {
+  source_backup_id = "1e69c0d0-39be-11ed-ad8b-b7bcb6ab9799"
+  count            = 1
 }

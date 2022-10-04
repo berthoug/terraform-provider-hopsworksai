@@ -4,6 +4,8 @@ provider "aws" {
 }
 
 provider "hopsworksai" {
+  api_key     = "lYC0V9BTp48YfDlrJtqvB6q53S8cS1QB1BHuXBoq"
+  api_gateway = "https://qaicacl203.execute-api.us-east-2.amazonaws.com/gautier"
 }
 
 # Create required aws resources, an ssh key, an s3 bucket, and an instance profile with the required hopsworks permissions
@@ -57,8 +59,10 @@ data "hopsworksai_instance_type" "large_worker" {
 }
 
 resource "hopsworksai_cluster" "cluster" {
-  name    = "tf-hopsworks-cluster"
-  ssh_key = module.aws.ssh_key_pair_name
+  name          = "test"
+  ssh_key       = module.aws.ssh_key_pair_name
+  managed_users = false
+  version       = "3.1.0-SNAPSHOT"
 
   head {
     instance_type = data.hopsworksai_instance_type.head.id
@@ -67,7 +71,7 @@ resource "hopsworksai_cluster" "cluster" {
   workers {
     instance_type = data.hopsworksai_instance_type.small_worker.id
     disk_size     = 256
-    count         = 1
+    count         = 0
   }
 
   workers {
@@ -85,18 +89,52 @@ resource "hopsworksai_cluster" "cluster" {
   }
 
   rondb {
-    management_nodes {
-      instance_type = data.hopsworksai_instance_type.rondb_mgm.id
-    }
-    data_nodes {
+    single_node {
       instance_type = data.hopsworksai_instance_type.rondb_data.id
-    }
-    mysql_nodes {
-      instance_type = data.hopsworksai_instance_type.rondb_mysql.id
     }
   }
 
   open_ports {
     ssh = true
   }
+
+  init_script = templatefile("config/templates/hopsworks_init.sh", {})
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
+
+resource "aws_instance" "testser" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.micro"
+
+  tags = {
+    Owner = "gautier"
+  }
+  subnet_id                   = hopsworksai_cluster.cluster.aws_attributes[0].network[0].subnet_id
+  key_name                    = module.aws.ssh_key_pair_name
+  associate_public_ip_address = true
+  vpc_security_group_ids      = [hopsworksai_cluster.cluster.aws_attributes[0].network[0].security_group_id]
+
+  user_data_replace_on_change = true
+  user_data                   = <<-EOF
+    #!/bin/bash
+    apt update
+    apt install -y mysql-client-core-8.0 python3-pip
+    !pip install -U hopsworks --quiet
+  EOF
 }

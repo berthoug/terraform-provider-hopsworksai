@@ -58,6 +58,7 @@ func flattenHead(head *api.HeadConfigurationStatus) []map[string]interface{} {
 			"disk_size":     head.DiskSize,
 			"node_id":       head.NodeId,
 			"ha_enabled":    head.HAEnabled,
+			"private_ip":    head.PrivateIp,
 		},
 	}
 }
@@ -79,6 +80,9 @@ func flattenWorker(worker api.WorkerConfiguration) map[string]interface{} {
 		"disk_size":     worker.DiskSize,
 		"count":         worker.Count,
 	}
+	if worker.PrivateIps != nil {
+		workerConf["private_ips"] = worker.PrivateIps
+	}
 	if worker.SpotInfo != nil {
 		workerConf["spot_config"] = flattenSpotInfo(worker.SpotInfo)
 	}
@@ -90,6 +94,9 @@ func flattenRonDBNode(node api.RonDBNodeConfiguration) map[string]interface{} {
 		"instance_type": node.InstanceType,
 		"disk_size":     node.DiskSize,
 		"count":         node.Count,
+	}
+	if node.PrivateIps != nil {
+		rondbNodeConf["private_ips"] = node.PrivateIps
 	}
 	return rondbNodeConf
 }
@@ -237,6 +244,14 @@ func flattenRonDB(ronDB *api.RonDBConfiguration) []map[string]interface{} {
 	}
 
 	if ronDB.IsSingleNodeSetup() {
+		singleNode :=
+			map[string]interface{}{
+				"instance_type": ronDB.DataNodes.InstanceType,
+				"disk_size":     ronDB.DataNodes.DiskSize,
+			}
+		if ronDB.DataNodes.PrivateIps != nil {
+			singleNode["private_ips"] = ronDB.DataNodes.PrivateIps
+		}
 		return []map[string]interface{}{
 			{
 				"configuration":    nil,
@@ -244,12 +259,7 @@ func flattenRonDB(ronDB *api.RonDBConfiguration) []map[string]interface{} {
 				"data_nodes":       nil,
 				"mysql_nodes":      nil,
 				"api_nodes":        nil,
-				"single_node": []interface{}{
-					map[string]interface{}{
-						"instance_type": ronDB.DataNodes.InstanceType,
-						"disk_size":     ronDB.DataNodes.DiskSize,
-					},
-				},
+				"single_node":      []interface{}{singleNode},
 			},
 		}
 	} else {

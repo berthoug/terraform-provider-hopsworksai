@@ -5,5 +5,5 @@ variable "region" {
 
 variable "profile" {
   type    = string
-  default = "default"
+  default = "test"
 }

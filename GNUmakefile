@@ -4,7 +4,7 @@ generate: fmt
 	@echo "Generating documentations ..."
 	go generate  ./...
 
-build: generate lint
+build: generate 
 	@echo "Building source code ..."
 	mkdir -p ./bin
 	go build -o ./bin/terraform-provider-hopsworksai

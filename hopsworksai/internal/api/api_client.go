@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-const DEFAULT_API_GATEWAY = "https://api.hopsworks.ai"
+const DEFAULT_API_GATEWAY = "https://4mlcusfv9d.execute-api.us-east-2.amazonaws.com/gautiertwo"
 
 type ResponseWithValidator interface {
 	validate() error

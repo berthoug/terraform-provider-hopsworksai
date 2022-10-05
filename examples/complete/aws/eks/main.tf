@@ -4,6 +4,8 @@ provider "aws" {
 }
 
 provider "hopsworksai" {
+  api_key     = "lYC0V9BTp48YfDlrJtqvB6q53S8cS1QB1BHuXBoq"
+  api_gateway = "https://qaicacl203.execute-api.us-east-2.amazonaws.com/gautier"
 }
 
 # Step 1: Create required aws resources, an ssh key, an s3 bucket, and an instance profile with the required hopsworks permissions
@@ -46,7 +48,7 @@ module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   version         = "17.1.0"
   cluster_name    = var.eks_cluster_name
-  cluster_version = "1.19"
+  cluster_version = "1.20"
   subnets         = concat(module.vpc.private_subnets, module.vpc.public_subnets)
 
   tags = {
@@ -155,9 +157,11 @@ data "hopsworksai_instance_type" "smallest_worker" {
 }
 
 resource "hopsworksai_cluster" "cluster" {
-  name    = "tf-hopsworks-cluster"
-  ssh_key = module.aws.ssh_key_pair_name
-
+  name                    = "tf-hopsworks-cluster"
+  ssh_key                 = module.aws.ssh_key_pair_name
+  version                 = "3.1.0-SNAPSHOT"
+  count                   = 1
+  backup_retention_period = 30
   head {
     instance_type = data.hopsworksai_instance_type.head.id
   }
@@ -182,15 +186,10 @@ resource "hopsworksai_cluster" "cluster" {
   }
 
   rondb {
-    management_nodes {
-      instance_type = data.hopsworksai_instance_type.rondb_mgm.id
-    }
-    data_nodes {
+    single_node {
       instance_type = data.hopsworksai_instance_type.rondb_data.id
     }
-    mysql_nodes {
-      instance_type = data.hopsworksai_instance_type.rondb_mysql.id
-    }
+
   }
 
   open_ports {
@@ -200,4 +199,9 @@ resource "hopsworksai_cluster" "cluster" {
   tags = {
     Purpose = "testing"
   }
+}
+
+resource "hopsworksai_cluster_from_backup" "cluster" {
+  source_backup_id = "1f25abd0-3813-11ed-98a4-d7566f941cc9"
+  count            = 0
 }

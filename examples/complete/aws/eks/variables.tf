@@ -5,7 +5,7 @@ variable "region" {
 
 variable "profile" {
   type    = string
-  default = "default"
+  default = "dev-deploy"
 }
 
 variable "eks_cluster_name" {

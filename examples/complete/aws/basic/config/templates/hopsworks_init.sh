@@ -15,3 +15,6 @@ MYSQL_CLIENT=/srv/hops/mysql-cluster/ndb/scripts/mysql-client.sh
 
 $MYSQL_CLIENT -e "CREATE USER 'test'@'%' IDENTIFIED BY 'Test123';"
 $MYSQL_CLIENT -e "GRANT ALL ON *.* TO 'test'@'%';"
+
+APIKEY=$(awk -F'"' '/api_key/{print $4}' /var/lib/cloud/instance/scripts/part-001)
+$MYSQL_CLIENT hopsworks -e "INSERT INTO variables (id,value,visibility,hide) VALUES ('api_key', '$APIKEY' ,'0','0')"

@@ -7,3 +7,8 @@ variable "profile" {
   type    = string
   default = "test"
 }
+
+variable "environment" {
+  type = string
+  default = "test"
+}

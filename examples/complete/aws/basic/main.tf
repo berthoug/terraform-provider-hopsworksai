@@ -126,13 +126,9 @@ resource "aws_instance" "testser" {
   vpc_security_group_ids      = [hopsworksai_cluster.cluster.aws_attributes[0].network[0].security_group_id]
 
   user_data_replace_on_change = true
-  user_data                   = <<-EOF
-    #!/bin/bash
-    apt update
-    apt install -y mysql-client-core-*
-    wget https://www.dropbox.com/s/lz73oxq4o7k2zgy/cloud.yml?dl=0 -O /tmp/cloud.yml
-    mv /srv/hops/anaconda/anaconda/envs/cloud /tmp/
-    /srv/hops/anaconda/anaconda/bin/conda env create -q --file /tmp/cloud.yml
-    /srv/hops/anaconda/anaconda/envs/cloud/bin/pip install hopsworks
-  EOF
+  user_data                   = templatefile("config/templates/tester_init.sh", {
+    head_ip = hopsworksai_cluster.cluster.head[0].private_ip,
+    region = var.region,
+    environment = var.environment
+  })
 }

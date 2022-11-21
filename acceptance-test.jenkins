@@ -4,6 +4,7 @@ pipeline {
             label 'local'
         }
     }
+    tools { go 'ndbagent' }
     environment {
         TF_ACCTEST_LOG_DIR="/home/jenkinsmaster/terraform/acc-test-logs/${currentBuild.number}"
         TF_ACCTEST_LOG_LEVEL="debug"
@@ -22,6 +23,10 @@ pipeline {
         stage ('instal gloangci-lint') {
             steps {
                 sh '''
+                    go version
+                    go env GOPATH
+                    echo $PATH
+                    echo $GOPATH
                     curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
                     golangci-lint --version
                     '''

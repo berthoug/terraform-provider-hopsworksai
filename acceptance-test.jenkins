@@ -17,16 +17,13 @@ pipeline {
         ACCTEST_PARALLELISM="4"
         ACCTEST_TIMEOUT="720m"
         PATH="/home/jenkinsmaster/terraform/:/home/jenkinsmaster/go/bin:${env.PATH}"
+        HOPSWORKSAI_API_KEY=credentials('f2115d9e-c7ed-4a3c-aa71-7082b27b6215')
     }
 
     stages {
         stage ('instal gloangci-lint') {
             steps {
                 sh '''
-                    go version
-                    go env GOPATH
-                    echo $PATH
-                    echo $GOPATH
                     curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
                     golangci-lint --version
                     '''

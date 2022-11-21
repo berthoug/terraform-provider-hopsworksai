@@ -4,9 +4,7 @@ generate: fmt
 	@echo "Generating documentations ..."
 	go generate  ./...
 
-build: generate lint build-no-doc
-
-build-no-doc:  lint 
+build: generate lint 
 	@echo "Building source code ..."
 	mkdir -p ./bin
 	go build -o ./bin/terraform-provider-hopsworksai
@@ -24,9 +22,6 @@ lint:
 test:
 	@echo "Running unit tests ..."
 	go test ./... -v -race -coverprofile=coverage.txt -covermode=atomic $(TESTARGS) -parallel=4
-
-test_junit: 
-	go test ./... -v -race -coverprofile=coverage.txt -covermode=atomic $(TESTARGS) -parallel=4 2>&1 | go-junit-report -set-exit-code -iocopy -out report.xml
 
 coverage: test
 	@echo "Running code coverage ..."

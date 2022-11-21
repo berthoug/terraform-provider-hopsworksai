@@ -20,30 +20,40 @@ pipeline {
 
     stages {
         stage ('instal gloangci-lint') {
-            sh '''
-                curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
-                golangci-lint --version
-                '''
+            steps {
+                sh '''
+                    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
+                    golangci-lint --version
+                    '''
+            }
         }
         stage ('instal go-junit-report'){
-            sh '''
-                go install github.com/jstemmer/go-junit-report/v2@latest
-            '''
+            steps {
+                sh '''
+                    go install github.com/jstemmer/go-junit-report/v2@latest
+                '''
+            }
         }
         stage ('build'){
-            sh '''
-                make
+            steps {
+                sh '''
+                    make
                 '''
+            }
         }
         stage ('sweep'){
-            sh '''
-            make sweep
-            '''
+            steps {
+                sh '''
+                    make sweep
+                '''
+            }
         }
         stage ('test'){
-            sh '''
-            make testacc TESTARGS="-run=TestAccClusterAZURE_basic"
-            '''
+            steps {
+                sh '''
+                    make testacc TESTARGS="-run=TestAccClusterAZURE_basic"
+                '''
+            }
         }
     }
      post { 

@@ -42,7 +42,7 @@ pipeline {
         stage ('build'){
             steps {
                 sh '''
-                    make
+                    make build-no-doc
                 '''
             }
         }

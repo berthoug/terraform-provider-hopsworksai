@@ -53,7 +53,7 @@ pipeline {
         stage ('test'){
             steps {
                 sh '''
-                    make testacc TESTARGS="-run=TestAccClusterAZURE_basic"
+                    make testacc
                 '''
             }
         }
